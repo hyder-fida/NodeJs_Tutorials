@@ -2,6 +2,14 @@ const express = require("express");
 const app = express();
 const db = require("./db");
 
+const person = require("./models/Person");
+
+const menu = require("./models/Menu");
+
+const bodyParser = require("body-parser");
+app.use(bodyParser.json()); // req.body will be parsed as JSON
+
+
 
 
 app.get("/", (req, res) => {
@@ -9,9 +17,57 @@ app.get("/", (req, res) => {
 })
 
 
+// Define a route to create a new person
+app.post("/person", async (req, res) => {
+    try {
+        const newPerson = new person(req.body);
+        const savedPerson = await newPerson.save();
+        console.log("New person created:", savedPerson);
+        res.status(201).json(savedPerson);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+// Define a route to get all persons
+app.get("/person", async (req, res) => {
+    try {
+        const persons = await person.find();
+        console.log("Fetched persons:", persons);    
+        res.status(200).json(persons);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+        console.error("Error fetching persons:", error);
+    }
+});
+
 app.listen(3000,()=>{
         console.log("server is running on port 3000");
-})
+});
+
+// Define a route to create a new menu item
+app.post("/menu", async (req, res) => {
+    try {
+      const menuItem = new menu(req.body);
+      const savedMenuItem = await menuItem.save();
+        console.log("New menu item created:", savedMenuItem);
+        res.status(201).json(savedMenuItem);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }   
+});
+
+// Define a route to get all menu items 
+app.get("/menu", async (req, res) => {
+    try {
+        const menuItems = await menu.find(); 
+        console.log("Fetched menu items:", menuItems);
+        res.status(200).json(menuItems);
+    } catch (error) {   
+        res.status(500).json({ error: error.message });
+        console.error("Error fetching menu items:", error);
+    }   
+});
 
 
 
