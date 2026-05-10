@@ -1,35 +1,48 @@
 const express = require("express");
 const app = express();
 const db = require("./db");
-
+const passport = require("./auth");
 
 const bodyParser = require("body-parser");
-app.use(bodyParser.json()); // req.body will be parsed as JSON
+app.use(bodyParser.json());
 
-app.get("/", (req, res) => {
-     res.send("Hii how can i server you...?")
-})
+const logRequests = (req, res, next) => {
+  console.log(
+    `[${new Date().toLocaleString()}] Request Made to ${req.method} ${req.url}`
+  );
+  next();
+};
 
-// Importing route handlers
-const personRoutes = require("./routes/personRoutes");
-const menuItemRoutes = require("./routes/menuRoutes");
+app.use(logRequests);
 
+app.use(passport.initialize());
 
-// Use the imported routes
-app.use("/person", personRoutes);
-app.use("/menu", menuItemRoutes);
-
-
-
-
-app.listen(3000,()=>{
-        console.log("server is running on port 3000");
+const localAuthMiddleware = passport.authenticate("local", {
+  session: false,
 });
 
 
+// LOGIN ROUTE
+app.post("/login", localAuthMiddleware, (req, res) => {
+  console.log("Authenticated User:", req.user);
+
+  res.json({
+    message: "Login Successful",
+    user: req.user,
+  });
+});
 
 
+// Routes
+const personRoutes = require("./routes/personRoutes");
+const menuItemRoutes = require("./routes/menuRoutes");
 
+app.use("/person", personRoutes);
+app.use("/menu", menuItemRoutes);
+
+app.listen(3000, () => {
+  console.log("server is running on port 3000");
+});
 
 
 
